@@ -1,0 +1,11 @@
+{
+  "name": "lypse",
+  "description": "Rapid-prototyping library build on top of knockout.meteor",
+  "homepage": "https://github.com/mshafir/lypse",
+  "author": "Michael Shafir",
+  "version": "0.1.0",
+  "git": "https://github.com/mshafir/lypse.git",
+  "packages": {
+    "knockout": "0.3.2"
+  }
+}
