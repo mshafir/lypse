@@ -12,7 +12,7 @@ library to allow knockout view models that are both bindable AND persistent.
 It then includes useful extensions that make it easier to write form-based UIs
 and provide intelligent sorting and filtering.
 
-We're working coffeescript, because it's awesome.
+We're working in coffeescript, because it's awesome.
 
 Basics - Setting up the Model
 -----------------------------
@@ -21,7 +21,7 @@ Declare your meteor collections on the server and client side:
 
     @Notes = new Meteor.Collection('notes')
 
-Now set up your model. Specify the fields and given them a description.
+Now set up your model. Specify the fields and give them a description.
 The description doesn't have any purpose for a primitive type, There are
 plans to simplify this in the future.
 
@@ -40,10 +40,10 @@ We specify the collection this model works from and the fields.
 Again, the string values of the fields map can be anything.
 
 Additionally, you can add an init function that gets called
-when the object is created an specify additional client side
+when the object is created, and specify additional client-side
 functions and fields. Only the fields in @fields are persisted to the db.
 
-Now, grab the notes for your knockout viewmodel.
+Now, grab the notes for your knockout viewmodel:
 
     class ViewModel
        constructor: ->
@@ -52,8 +52,9 @@ Now, grab the notes for your knockout viewmodel.
     @model = new ViewModel()
     Meteor.startup(() -> ko.applyBindings model)
 
-This will grab and wrap all Notes in the db. We will cover filters
-and selectors later.
+This will grab and wrap all Notes in the db.
+Then we initialize the viewmodel and set up the knockout bindings.
+We will cover sorts, filters, and selectors later.
 
 Now that's it! You are done with the coffeescript, we're ready to bind!
 
@@ -61,7 +62,7 @@ Now that's it! You are done with the coffeescript, we're ready to bind!
 Basics - Setting up the View
 -------------------------------
 
-In your html:
+In your html loop through the notes and bind directly to the text, author, and date fields we created.
 
     <body>
       <div data-bind="foreach: notes">
