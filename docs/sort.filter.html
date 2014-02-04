@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>LypseSort</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="lypse.html">
+                lypse.coffee
+              </a>
+            
+              
+              <a class="source" href="lypse.form.html">
+                lypse.form.coffee
+              </a>
+            
+              
+              <a class="source" href="sort.filter.html">
+                sort.filter.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1 id="lypsesort">LypseSort</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Author: Michael Shafir</p>
+<p>This library extends LypseModels with useful sorting/filtering capabilities</p>
+<h2 id="filterset">FilterSet</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Data structure storing labeled filters and capable of
+turning filters on/off and calculating a combined
+data struct (map or list) of the current active set</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">FilterSet</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <h2 id="constructor">Constructor</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>builds a filter set, typeMap specifies whether the storage
+data structure should be a map (for db filters) or not (for functional filters)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@typeMap</span> = <span class="literal">false</span>)</span> -&gt;</span>
+    <span class="property">@map</span> = {}
+    <span class="property">@dependencies</span> = {}
+    <span class="property">@active</span> = {}
+    <span class="property">@values</span> = {}
+    <span class="property">@activeSet</span> = <span class="keyword">if</span> <span class="property">@typeMap</span> <span class="keyword">then</span> ko.observable({}) <span class="keyword">else</span> ko.observable([])
+
+
+  <span class="attribute">addEntry</span>: <span class="function"><span class="params">(label,value)</span> =&gt;</span>
+    <span class="built_in">console</span>.log <span class="string">'adding filter '</span>+label
+    <span class="property">@map</span>[label] = value
+    <span class="property">@active</span>[label] = ko.observable(<span class="literal">false</span>)
+    <span class="property">@dependencies</span>[label] = []</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <h2 id="add">Add</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>specifies a new set of filters to the filter set
+the input is of the format {label1: filterspec, label2: filterspec2}
+where label1 and label2 will be registered as dependent, meaning
+that by setting label1 to on, label2 will be turned off and vice versa</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">add</span>: <span class="function"><span class="params">(item)</span> =&gt;</span>
+    <span class="keyword">for</span> k,v <span class="keyword">of</span> item
+      <span class="property">@addEntry</span>(k,v)
+      <span class="keyword">for</span> k2 <span class="keyword">of</span> item
+        <span class="keyword">if</span> k <span class="keyword">isnt</span> k2
+          <span class="property">@dependencies</span>[k].push(k2)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <h2 id="add-valued">Add Valued</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>creates a ko.observable of &#39;name&#39; in the FilterSet.values map
+when this observable is non-empty a filter will auto-activate
+Example:
+    model = ly.model(@Poems)
+    model.filters.addValued(&#39;upvotes&#39;)</p>
+<pre><code># this observable was just created
+model.filters.values.upvotes(5)  # model will be only those poems with exactly 5 upvotes
+model.filters.addValued(&#39;upvotes&#39;,&#39;$gt&#39;)
+model.filters.values.upvotes(5)  # model will be those poems with greater than 5 upvotes
+model.filters.values.upvotes()   # model will be reset
+</code></pre>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">addValued</span>: <span class="function"><span class="params">(name, operator)</span> =&gt;</span>
+    valueobs = ko.observable(<span class="string">''</span>)
+    <span class="property">@values</span>[name] = valueobs
+    <span class="keyword">if</span> operator?
+      valmap = ko.computed(<span class="function"> =&gt;</span>
+        result = {}
+        resop = {}
+        resop[operator] = <span class="property">@values</span>[name]()
+        result[name] = resop
+        <span class="built_in">console</span>.log <span class="string">'rewriting to:'</span>
+        <span class="built_in">console</span>.log result
+        <span class="keyword">return</span> result)
+    <span class="keyword">else</span>
+      valmap = {}
+      valmap[name] = valueobs
+    <span class="property">@addEntry</span>(name,valmap)
+    valueobs.subscribe<span class="function"><span class="params">( (newval) =&gt;
+      <span class="keyword">if</span> newval? <span class="keyword">and</span> newval <span class="keyword">isnt</span> <span class="string">''</span>
+        <span class="property">@set</span>(name)
+      <span class="keyword">else</span>
+        <span class="property">@unset</span>(name))</span>
+
+  <span class="title">checkHasFilter</span>: <span class="params">(label)</span> =&gt;</span>
+    <span class="keyword">if</span> label <span class="keyword">not</span> <span class="keyword">of</span> <span class="property">@map</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>TODO: throw</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="built_in">console</span>.log(<span class="string">"Couldn't set label "</span>+label+<span class="string">" because it wasn't specified."</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <h2 id="set">Set</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>sets the filter with the given label to be active,
+this deactivates dependent filters
+triggers recalculation of the active filter set</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">set</span>: <span class="function"><span class="params">(label)</span> =&gt;</span>
+    <span class="property">@checkHasFilter</span>(label)
+    <span class="property">@active</span>[label](<span class="literal">true</span>)
+    <span class="keyword">for</span> deplabel <span class="keyword">in</span> <span class="property">@dependencies</span>[label]
+      <span class="property">@active</span>[deplabel](<span class="literal">false</span>)
+    <span class="property">@recalculateActiveSet</span>()
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <h2 id="unset">Unset</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>sets the filter with the given label to be inactive
+triggers recalculation of the active filter set</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">unset</span>: <span class="function"><span class="params">(label)</span> =&gt;</span>
+    <span class="property">@checkHasFilter</span>(label)
+    <span class="property">@active</span>[label](<span class="literal">false</span>)
+    <span class="property">@recalculateActiveSet</span>()
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h2 id="toggle">Toggle</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>toggles the filter with the given label on/off
+triggers recalculation of the active filter set</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">toggle</span>: <span class="function"><span class="params">(label)</span> =&gt;</span>
+    <span class="keyword">if</span> <span class="property">@active</span>[label]()
+      <span class="property">@unset</span>(label)
+    <span class="keyword">else</span>
+      <span class="property">@set</span>(label)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <h2 id="status">Status</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>returns an observable that equals
+true if a filter with the given label exists
+and is active</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">status</span>: <span class="function"><span class="params">(label)</span> =&gt;</span>
+    <span class="keyword">if</span> label <span class="keyword">of</span> <span class="property">@map</span>
+      <span class="property">@active</span>[label]
+    <span class="keyword">else</span>
+      <span class="built_in">console</span>.log(<span class="string">'The label '</span>+label+<span class="string">' was not specified in the filter set.'</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <h2 id="recalculate-active-set">Recalculate Active Set</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>recomputes the data structure (map or list)
+storing the currently active filters
+and sets the observable representing this set</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="attribute">recalculateActiveSet</span>: <span class="function"><span class="params">()</span> =&gt;</span>
+    result = <span class="keyword">if</span> <span class="property">@typeMap</span> <span class="keyword">then</span> {} <span class="keyword">else</span> []
+    <span class="keyword">for</span> label,isOn <span class="keyword">of</span> <span class="property">@active</span>
+      <span class="keyword">if</span> isOn()
+        val = ko.utils.unwrapObservable(<span class="property">@map</span>[label])
+        <span class="built_in">console</span>.log label+<span class="string">":"</span>
+        <span class="built_in">console</span>.log val
+        <span class="keyword">if</span> <span class="property">@typeMap</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>TODO: check map</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="keyword">for</span> k,v <span class="keyword">of</span> val
+            result[k] = ko.utils.unwrapObservable(v)
+        <span class="keyword">else</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>TODO: check function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          result.push(val)
+    <span class="property">@activeSet</span>(result)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>sortfilter is the key wrapping function that add conveniences
+methods into the bindable model returned by ly.model</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@sortfilter</span> = <span class="function"><span class="params">(basemodel,object)</span> -&gt;</span>
+  model = ko.observable(basemodel())
+  model.base = basemodel
+  model.filters = basemodel.filters
+  model.sort = basemodel.sort
+  model.limit = basemodel.limit</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>ability to fetch more documents (? does rewrapping happen ?)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  model.<span class="function"><span class="title">fetch</span> = <span class="params">(amount = <span class="number">100</span>)</span> =&gt;</span> model.limit(model.limit()+amount)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <h1 id="sorts">Sorts</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>The idea behind the sorting architecture is to allow
+simple, but flexible sorting convenience calls
+For example:</p>
+<pre><code># sort (primary) by name ascending
+model.sortBy.asc.name()
+# secondary sort by position descending
+model.sortBy.desc.position()
+
+# query for sorting by
+model.sortingBy.name()  # yields 1 (primary sort)
+model.sortingBy.desc.position()  # yields 2 (secondary sort)
+model.sortingBy.asc.position() # yields -1 (not sorting by)
+
+# you can also chain sort commands
+model.sortBy.asc.name().desc.position()
+</code></pre><p>This convenience capability is so that sorts operations
+can easily be bound from the html</p>
+<h2 id="sort-setup-code">Sort Setup Code</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  model.sortingBy = {}
+  model.sortingBy.asc = {}
+  model.sortingBy.desc = {}
+  model.sortBy = {}
+  model.sortBy.asc = {}
+  model.sortBy.desc = {}
+
+  <span class="keyword">for</span> field <span class="keyword">of</span> object.fields
+    <span class="keyword">do</span> <span class="function"><span class="params">(field)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>test for which fields you are sorting by</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      model.sortingBy.asc[field] = ko.observable(-<span class="number">1</span>)
+      model.sortingBy.desc[field] = ko.observable(-<span class="number">1</span>)
+      model.sortingBy[field] = ko.observable(-<span class="number">1</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>clear sorts</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      model.<span class="function"><span class="title">newSort</span> = <span class="params">()</span> =&gt;</span>
+        model.sort([])
+        <span class="keyword">for</span> field <span class="keyword">of</span> object.fields
+          model.sortingBy.asc[field](-<span class="number">1</span>)
+          model.sortingBy.desc[field](-<span class="number">1</span>)
+          model.sortingBy[field](-<span class="number">1</span>)
+        <span class="keyword">return</span> model.sortBy</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>apply sorts on db fields</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      model.sortBy.asc[field] = <span class="function"><span class="params">()</span> =&gt;</span>
+        model.sort(model.sort().concat([[field,<span class="string">'asc'</span>]]))
+        model.sortingBy[field](model.sort().length)
+        model.sortingBy.asc[field](model.sort().length)
+        <span class="keyword">return</span> model.sortBy
+      model.sortBy.desc[field] = <span class="function"><span class="params">()</span> =&gt;</span>
+        model.sort(model.sort().concat([[field,<span class="string">'desc'</span>]]))
+        model.sortingBy[field](model.sort().length)
+        model.sortingBy.desc[field](model.sort().length)
+        <span class="keyword">return</span> model.sortBy</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <h1 id="filters">Filters</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>there are two types of filters (db/server-side and functional/client-side)
+we want to allow either of these types
+TODO: respond when client-side filters are aggressive by fetching more entries
+Additionally, we allow the ability to assign a label to a filter
+This will allow the filter to be easily turned On/Off and
+allows a bindable check for the status of the filter</p>
+<p>Again, the goal here is to make the operations convenient enough
+to be callable directly from the html</p>
+<p>Also, sometimes, filters toggle with each other. An example
+is a most recent this day/month/year filter set.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  model.filters.db = <span class="keyword">new</span> FilterSet(<span class="literal">true</span>)
+  model.filters.func = <span class="keyword">new</span> FilterSet(<span class="literal">false</span>)
+
+  model.filters.db.activeSet.subscribe<span class="function"><span class="params">( (newval) =&gt;
+    model.filters(newval))</span>
+
+  <span class="title">recalcSet</span> = <span class="params">()</span> =&gt;</span>
+    result = []
+    <span class="keyword">for</span> item <span class="keyword">in</span> basemodel()
+      allpass = <span class="literal">true</span>
+      <span class="keyword">for</span> func <span class="keyword">in</span> model.filters.func.activeSet()
+        <span class="keyword">if</span> func(item)
+          allpass = <span class="literal">false</span>
+          <span class="keyword">break</span>
+      <span class="keyword">if</span> allpass
+        result.push(item)
+    model(result)
+
+  model.filters.func.activeSet.subscribe( recalcSet )
+  model.base.subscribe( recalcSet )
+
+  <span class="keyword">return</span> model
+
+root = <span class="built_in">exports</span> ? <span class="keyword">this</span>
+root.ly.sortfilter = sortfilter</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

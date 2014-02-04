@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>General Modeling Utils</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="lypse.html">
+                lypse.coffee
+              </a>
+            
+              
+              <a class="source" href="lypse.form.html">
+                lypse.form.coffee
+              </a>
+            
+              
+              <a class="source" href="sort.filter.html">
+                sort.filter.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h1 id="general-modeling-utils">General Modeling Utils</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Mapping</span></span>
+   <span class="attribute">map</span>: <span class="function"><span class="params">(text, create_func)</span> -&gt;</span>
+      @[text] =
+         <span class="attribute">create</span>: create_func
+
+<span class="property">@make_map</span> = <span class="function"><span class="params">(key,value)</span> -&gt;</span>
+   m = {}
+   m[key] = value
+   <span class="keyword">return</span> m
+
+<span class="property">@vm</span> = <span class="function"><span class="params">(vm)</span> -&gt;</span> {<span class="string">'view_model'</span>:vm}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h1 id="change-builders">Change Builders</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>functions for handling change notifications and
+building modifiers for Mongo selectors</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@mod_build</span> = <span class="function"><span class="params">(obj,superfields...,field)</span> -&gt;</span>
+   <span class="keyword">if</span> field?
+      s = mod_build(obj.parent,superfields...)
+      s + field + <span class="string">"."</span> + _.indexOf(obj.parent[field](),obj) + <span class="string">"."</span>
+   <span class="keyword">else</span>
+      <span class="string">""</span>
+
+<span class="property">@get_id</span> = <span class="function"><span class="params">(obj)</span> -&gt;</span>
+   <span class="keyword">if</span> <span class="keyword">not</span> obj._id?
+      get_id(obj.parent)
+   <span class="keyword">else</span>
+      obj._id()
+
+<span class="property">@get_sel_mod</span> = <span class="function"><span class="params">(obj,superfields...,field,value)</span> -&gt;</span>
+   selector = {<span class="string">'_id'</span>:get_id(obj)}
+   field_prefix = mod_build(obj,superfields...)
+   modifier = make_map(field_prefix+field,value)
+   [selector,modifier]
+
+<span class="property">@do_update</span> = <span class="function"><span class="params">(obj,collection,superfields...,field,value)</span> -&gt;</span>
+   [selector,modifier] = get_sel_mod(obj,superfields...,field,value)
+   collection.update(selector, <span class="attribute">$set</span>: modifier)
+
+<span class="property">@do_insert</span> = <span class="function"><span class="params">(obj,collection,superfields...,field,value)</span> -&gt;</span>
+   [selector,modifier] = get_sel_mod(obj,superfields...,field,value)
+   collection.update(selector, <span class="attribute">$push</span>: modifier)
+
+<span class="property">@do_remove</span> = <span class="function"><span class="params">(obj,collection,superfields...,field,value)</span> -&gt;</span>
+   [selector,modifier] = get_sel_mod(obj,superfields...,field,value)
+   collection.update(selector, <span class="attribute">$pull</span>: modifier)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <h1 id="link">Link</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>the link objects handles foreign keys in Lypse Models</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Link</span></span>
+   <span class="attribute">constructor</span>: <span class="function"><span class="params">(<span class="property">@model</span>, <span class="property">@selector</span>)</span> -&gt;</span>
+
+<span class="property">@many</span> = <span class="function"><span class="params">(collection, field, selector)</span> -&gt;</span>
+   <span class="keyword">new</span> Link<span class="function"><span class="params">(collection, (self) -&gt;
+     <span class="keyword">if</span> selector?
+       m = selector
+     <span class="keyword">else</span>
+       m = {}
+     m[field] = self._id()
+     <span class="keyword">return</span> m)</span>
+
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <h1 id="lypsemodel">LypseModel</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>this object forms the core of the lypse system. A
+class that derrives from LypseModel will be both bindable
+and persistent to the underlying mongo/meteor collection</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">LypseModel</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>note: collection is collection or field</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   <span class="attribute">constructor</span>: <span class="function"><span class="params">(data,parent,path)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>build the mapping</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      mapping = <span class="keyword">new</span> Mapping()
+      <span class="keyword">for</span> field,func <span class="keyword">of</span> <span class="property">@constructor</span>.fields
+         <span class="keyword">do</span> <span class="function"><span class="params">(field,func)</span> =&gt;</span>
+            <span class="keyword">if</span> func <span class="keyword">instanceof</span> Function</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>if it&#39;s in the data it must be a sub-document</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>               <span class="keyword">if</span> field <span class="keyword">of</span> data
+                  obj = func()
+                  mapping.map<span class="function"><span class="params">(field, (o) =&gt; <span class="keyword">new</span> obj(o.data,@,path.concat(field)))</span>
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>unwrap the data</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      ko.mapping.fromJS(data, mapping, @)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>build secondary links (foreign keys)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> field,func <span class="keyword">of</span> <span class="property">@constructor</span>.fields
+         <span class="keyword">if</span> func <span class="keyword">instanceof</span> Function
+            obj = func()
+            <span class="keyword">if</span> obj <span class="keyword">instanceof</span> Link
+               @[field] = ko.meteor.model(obj.model.collection,obj.selector(@),{},obj.model,@)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>set the parent element and path</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="property">@parent</span> = parent
+      <span class="property">@path</span> = path
+      <span class="property">@data</span> = data</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>set up the computed observables (NOTE: does not work)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> k,v <span class="keyword">of</span> <span class="property">@constructor</span>.computed
+         @[k] = ko.computed<span class="function"><span class="params">(() =&gt; v(@))</span>
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>subscribe to change notifications
+update the db when they happen
+add convenience functions for inserts</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> key,value <span class="keyword">of</span> data
+         <span class="keyword">do</span> <span class="function"><span class="params">(key,value)</span> =&gt;</span>
+            <span class="keyword">if</span> key <span class="keyword">isnt</span> <span class="string">'_id'</span>
+               <span class="keyword">if</span> key <span class="keyword">not</span> <span class="keyword">of</span> <span class="property">@constructor</span>.fields
+                  <span class="built_in">console</span>.log <span class="string">'error: field "'</span>+key+<span class="string">'" not declared'</span>
+               <span class="keyword">else</span> <span class="keyword">if</span> <span class="property">@constructor</span>.fields[key] <span class="keyword">instanceof</span> Function
+                  @[key][<span class="string">'add'</span>] = <span class="function"><span class="params">(newval)</span> =&gt;</span> do_insert(@,path...,key,newval)
+               <span class="keyword">else</span>
+                  @[key].subscribe <span class="function"><span class="params">(newval)</span> =&gt;</span>
+                     do_update(@,path...,key,newval)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>if it exists, do the subclass&#39; initialization routine</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="property">@init</span>?()
+   <span class="attribute">remove</span>: <span class="function"><span class="params">()</span> =&gt;</span>
+      <span class="keyword">if</span> <span class="property">@_id</span>?
+         <span class="property">@path</span>[<span class="number">0</span>].remove({<span class="attribute">_id</span>: <span class="property">@_id</span>()})
+      <span class="keyword">else</span>
+         do_remove(<span class="property">@parent</span>,<span class="property">@path</span>...,<span class="property">@data</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>This is the core modelling function, performing a query
+and wrapping with the appropriate LypseModel instances</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@new_model</span> = <span class="function"><span class="params">(object,self)</span> =&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>we store filters and sorts as observables
+that aren&#39;t modified on load, but afterwards with
+a set of convenience predicates on the observable
+model result</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   filters = ko.observable({})
+   sort = ko.observable([])
+   limit = ko.observable(<span class="number">100</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>the options are computed so they are re-applied on change</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   options = ko.computed(<span class="function"> =&gt;</span>
+      result = {}
+      s = ko.utils.unwrapObservable(sort)
+      <span class="keyword">if</span> s
+        result.sort = s
+      l = ko.utils.unwrapObservable(limit)
+      <span class="keyword">if</span> l
+        result.limit = l
+      <span class="keyword">return</span> result)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>calls into the core ko.meteor library to generate the wrapper</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   model = ko.meteor.model(object.collection,filters,options,object,self)
+   model.filters = filters
+   model.sort = sort
+   model.limit = limit</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>call into the sortfilter library to add convenience functions over the options</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   <span class="keyword">return</span> ly.sortfilter(model,object)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>convenience function to get an observable of a session variable</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@session</span> = <span class="function"><span class="params">(session)</span> -&gt;</span>
+   result = ko.observable(Session.get(session))
+   Deps.autorun<span class="function"><span class="params">(() =&gt; result(Session.get(session)))</span>
+   <span class="title">result</span>
+
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>the higher-level lypse objects and functions to expose</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@ly</span> =
+   <span class="attribute">make_map</span>: make_map
+   <span class="attribute">many</span>: many
+   <span class="attribute">Link</span>: Link
+   <span class="attribute">model</span>: new_model
+   <span class="attribute">session</span>: session
+
+root = <span class="built_in">exports</span> ? <span class="keyword">this</span>
+root.ly = ly
+root.LypseModel = LypseModel</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

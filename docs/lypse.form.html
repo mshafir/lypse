@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>lypse.form.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page">
+            
+              
+              <a class="source" href="lypse.html">
+                lypse.coffee
+              </a>
+            
+              
+              <a class="source" href="lypse.form.html">
+                lypse.form.coffee
+              </a>
+            
+              
+              <a class="source" href="sort.filter.html">
+                sort.filter.coffee
+              </a>
+            
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>lypse.form.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <h6 id="-">#</h6>
+<p> LypseForm
+       Michael Shafir</p>
+<p>   This library is intented to make the process of form creation simpler
+ through usage of lypse models.</p>
+<h6 id="-">#</h6>
+<p>An adder is an object that facilitates the population and creation of
+a new instance of a LypseModel objct.</p>
+<p>A LypseForm is a further abstracted bindable object that supports object creation.</p>
+<p>Example:</p>
+<p>class Person extends LypseModel
+  @collection: People
+  @fields:
+     name: &#39;&#39;
+     email: &#39;&#39;</p>
+<h1 id="create-a-new-person-object-and-add-it-to-the-database">Create a new person object and add it to the database</h1>
+<p>p = @adder(Person) 
+p.name(&#39;Michael Shafir&#39;)
+p.email(&#39;Michael.Shafir@gmail.com&#39;)
+p.add()  </p>
+<h1 id="lypseform-for-doing-the-same-thing">LypseForm for doing the same thing</h1>
+<p>class PersonForm extends LypseForm
+  @source: Person
+   defaults:
+     name: () -&gt; &#39;anonymoues&#39;</p>
+<p>p = new PersonForm()
+p.name(&#39;Michael Shafir&#39;)
+p.email(&#39;Michael.Shafir@gmail.com&#39;)
+p.add()  </p>
+<h1 id="the-benefit-to-the-form-is-that-it-supports-defaults-cleaner-development">the benefit to the form is that it supports defaults cleaner development</h1>
+<h1 id="there-are-plans-to-implement-form-validation-as-well">there are plans to implement form validation as well</h1>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="property">@unwrap_adder</span> = <span class="function"><span class="params">(addr)</span> -&gt;</span>
+   result = {}
+   <span class="keyword">for</span> k,v <span class="keyword">of</span> addr
+      <span class="keyword">if</span> k <span class="keyword">is</span> <span class="string">'_id'</span>
+         <span class="keyword">continue</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>for observable arrays unwrap all the items recursively</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> ko.isObservable(v) <span class="keyword">and</span> v() <span class="keyword">instanceof</span> Array
+         lst = []
+         <span class="keyword">for</span> item <span class="keyword">in</span> v()
+            lst.push unwrap_adder(item)
+         result[k] = lst</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>for regular observables just unwrap the value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">else</span> <span class="keyword">if</span> ko.isObservable(v)
+         result[k] = v()
+   <span class="keyword">return</span> result
+
+<span class="property">@adder</span> = <span class="function"><span class="params">(model,target)</span> =&gt;</span>
+   newobj = target ? {}
+   newobj._id = ko.observable()
+   <span class="keyword">for</span> k,v <span class="keyword">of</span> model.fields
+      <span class="keyword">do</span> <span class="function"><span class="params">(k,v)</span> =&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>this is the best way I can think of to know if something is a sub-model
+we make sub-models into observableArrays with an .add on the array
+and a .remove on each item. Also we subscribe to bulk changes to allow
+for more fluid methods on data entry</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>         <span class="keyword">if</span> v <span class="keyword">instanceof</span> Function <span class="keyword">and</span> <span class="keyword">typeof</span>(v()) <span class="keyword">isnt</span> <span class="string">'object'</span>
+            result = ko.observableArray()
+            result[<span class="string">'add'</span>] = <span class="function"><span class="params">()</span> -&gt;</span>
+               ret = adder(v())
+               ret[<span class="string">'remove'</span>] = <span class="function"><span class="params">()</span> -&gt;</span>
+                  result.remove(ret)
+                  result.onItemRemoved?(ret)
+               result.push(ret)
+               <span class="keyword">for</span> sk,sv <span class="keyword">of</span> ret
+                  sv.subscribe?<span class="function"><span class="params">(() -&gt;
+                     result.onItemChanged?(ret)
+                     newobj.onItemChanged?(ret))</span>
+               <span class="title">result</span>.<span class="title">onItemAdded</span>?<span class="params">(ret)</span>
+               <span class="title">return</span> <span class="title">ret</span>
+            <span class="title">newobj</span>[<span class="title">k</span>] = <span class="title">result</span>
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>things that aren&#39;t functions should just be single fields (SUBJECT TO CHANGE)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>         <span class="keyword">else</span> <span class="keyword">if</span> v <span class="keyword">not</span> <span class="keyword">instanceof</span> Function
+            newobj[k] = ko.observable(<span class="string">''</span>)
+            newobj[k].subscribe <span class="function"><span class="params">()</span> -&gt;</span> newobj.onItemChanged?(newobj)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>if we&#39;re wrapping a top-level doc (has a collection)
+then put a .add function that will throw it into the collection
+and call the onAdding and onAdd events to handle prep and cleanup</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>   <span class="keyword">if</span> model.collection?
+      newobj[<span class="string">'add'</span>] = <span class="function"><span class="params">()</span> =&gt;</span>
+         newobj.onAdding?(newobj)
+         model.collection.insert(unwrap_adder(newobj),
+              <span class="function"><span class="params">(error, id)</span> -&gt;</span>
+                  <span class="keyword">if</span> error
+                    <span class="built_in">console</span>.log(error)
+                  newobj._id(id))
+         newobj.onAdd?(newobj)
+         newobj
+   <span class="keyword">return</span> newobj
+
+<span class="property">@empty_observable_item</span> = <span class="function"><span class="params">(it)</span> -&gt;</span>
+   <span class="keyword">for</span> f <span class="keyword">in</span> it
+      <span class="keyword">if</span> f.name <span class="keyword">is</span> <span class="string">'observable'</span>
+         <span class="keyword">if</span> f()? <span class="keyword">and</span> f() <span class="keyword">isnt</span> <span class="string">''</span>
+            <span class="keyword">return</span> <span class="literal">false</span>
+   <span class="keyword">return</span> <span class="literal">true</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">LypseForm</span></span>
+   <span class="attribute">constructor</span>: <span class="function"><span class="params">()</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>make this an Adder for the source object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      adder(<span class="property">@constructor</span>.source,@)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>set defaults</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> <span class="property">@defaults</span>
+         <span class="keyword">for</span> field,func <span class="keyword">of</span> <span class="property">@defaults</span>
+            <span class="built_in">console</span>.log <span class="string">'setting default field '</span>+field+<span class="string">' to '</span>+func(@)
+            @[field](func(@))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>call the init</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="property">@init</span>?()
+   <span class="attribute">onAdd</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>usually we want to clear all fields</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> f <span class="keyword">of</span> @
+         <span class="keyword">if</span> ko.isObservable(f) <span class="keyword">and</span> f() <span class="keyword">instanceof</span> Array
+            f.removeAll()
+         <span class="keyword">else</span> <span class="keyword">if</span> ko.isObservable(f)
+            f(<span class="literal">null</span>)
+   <span class="attribute">onAdding</span>: <span class="function"><span class="params">(obj)</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>remove empty subfields </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">for</span> key,f <span class="keyword">of</span> @
+         <span class="keyword">if</span> ko.isObservable(f) <span class="keyword">and</span> f() <span class="keyword">instanceof</span> Array
+            <span class="keyword">for</span> item <span class="keyword">in</span> f()
+               <span class="keyword">if</span> empty_observable_item(item)
+                  item.remove()
+   <span class="attribute">load</span>:<span class="function"> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>set the defaults again (in case they changed)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> <span class="property">@defaults</span>
+         <span class="keyword">for</span> field,func <span class="keyword">of</span> <span class="property">@defaults</span>
+            @[field](func(@))
+      <span class="property">@init</span>?()
+
+root = <span class="built_in">exports</span> ? <span class="keyword">this</span>
+root.ly.adder = adder
+root.LypseForm = LypseForm</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
