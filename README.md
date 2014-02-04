@@ -1,5 +1,7 @@
-lypse (Meteor + Knockout = apocaLYPSE)
-========================================
+lypse
+=======
+(Meteor + Knockout = apocaLYPSE)
+
 Apocalypse is a library to facilitate rapid-application development in Meteor. 
 It follows the philosophy that, given a powerful basis of syntactic sugar,
 you can build the majority of a webapp purely from the HTML view.
