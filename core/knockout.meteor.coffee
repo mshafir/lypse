@@ -1,4 +1,13 @@
 ###
+Knockout Meteor plugin v0.3 with modifications
+2014 Michael Shafir
+
+Adds model function that adds a parent to sub-documents.
+Bug fixes.
+
+###
+
+###
 Knockout Meteor plugin v0.3
 (c) 2012 Steven Luscher, Ruboss - http://ruboss.com/
 License: MIT (http://www.opensource.org/licenses/mit-license.php)
@@ -56,7 +65,6 @@ class AbstractFinder
     # If an argument to this finder happens to be a Knockout observable,
     # subscribe to it and recreate the query whenever it changes
     ko.computed =>
-      console.log("rerunning finder")
       ko.utils.unwrapObservable(@collection)
       ko.utils.unwrapObservable(@selector)
       ko.utils.unwrapObservable(@options)
@@ -74,7 +82,6 @@ class AbstractFinder
     selector = ko.utils.unwrapObservable(@selector)
     options = ko.utils.unwrapObservable(@options)
     mapping = @processMapping(ko.utils.unwrapObservable(@mapping))
-    console.log 'build and run query'
     # Create a MappedQuery (as defined in subclass)
     @query = @createQuery(collection, selector, options, mapping)
 
